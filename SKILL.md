@@ -476,10 +476,23 @@ python3 scripts/generate_summary.py <chapter_info>
    ```
 
 4. **克隆并启动 PO Token 服务**
+
+   **Linux/macOS**:
    ```bash
    git clone --single-branch --branch 1.3.1 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git
    cd bgutil-ytdlp-pot-provider/server
    npm ci && npx tsc && node build/main.js
+   ```
+
+   **Windows**（使用提供的批处理脚本）：
+   ```powershell
+   start_po_token_service.bat
+   ```
+   或手动执行：
+   ```powershell
+   git clone --single-branch --branch 1.3.1 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git
+   cd bgutil-ytdlp-pot-provider\server
+   npm ci && npx tsc && node build\main.js
    ```
 
 5. **验证服务运行**
