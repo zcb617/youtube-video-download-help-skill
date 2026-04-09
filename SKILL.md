@@ -69,7 +69,7 @@ model: claude-sonnet-4-5-20250514
    python3 -c "import bgutil_ytdlp_pot_provider"
    
    # 检查服务是否运行
-   curl http://127.0.0.1:4416/health
+   curl http://127.0.0.1:4416/ping
    ```
 
 5. 检测 Whisper（用于无字幕视频转录）
@@ -466,7 +466,7 @@ python3 scripts/generate_summary.py <chapter_info>
 
 5. **验证服务运行**
    ```bash
-   curl http://127.0.0.1:4416/health
+   curl http://127.0.0.1:4416/ping
    ```
 
 6. **重新尝试下载视频**
