@@ -45,8 +45,14 @@ model: claude-sonnet-4-5-20250514
 
 3. 检测 Python 依赖
    ```bash
-   python3 -c "import yt_dlp; print('✅ yt-dlp available')"
-   python3 -c "import pysrt; print('✅ pysrt available')"
+   python3 -c "import yt_dlp; print('OK')"
+   python3 -c "import pysrt; print('OK')"
+   ```
+   
+   **Windows 用户**: 如果输出乱码或报错，先设置 UTF-8 编码：
+   ```bash
+   export PYTHONIOENCODING=utf-8
+   python3 -c "import yt_dlp; print('OK')"
    ```
 
 **如果环境检测失败**:
