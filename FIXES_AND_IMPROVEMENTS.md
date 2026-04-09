@@ -17,7 +17,7 @@
 
 **依赖**:
 - `bgutil-ytdlp-pot-provider` - PO Token 生成服务
-- Node.js >= 20 或 Deno >= 2.0.0
+- Node.js >= 20
 
 **使用方法**:
 ```bash
