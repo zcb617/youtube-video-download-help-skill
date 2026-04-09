@@ -70,6 +70,46 @@ def detect_ffmpeg_variant() -> Dict:
                     'has_libass': has_libass
                 }
 
+    elif system == 'Windows':
+        # Windows: 检查常见的 FFmpeg 安装路径
+        from pathlib import PureWindowsPath
+        import os
+
+        # 获取 Program Files 路径
+        program_files = os.environ.get('ProgramFiles', 'C:\\Program Files')
+        program_files_x86 = os.environ.get('ProgramFiles(x86)', 'C:\\Program Files (x86)')
+        localappdata = os.environ.get('LOCALAPPDATA', os.path.expandvars('%LOCALAPPDATA%'))
+        userprofile = os.environ.get('USERPROFILE', os.path.expanduser('~'))
+
+        windows_paths = [
+            # winget 安装路径 (Gyan's builds)
+            f"{program_files}\\ffmpeg\\bin\\ffmpeg.exe",
+            f"{program_files_x86}\\ffmpeg\\bin\\ffmpeg.exe",
+            # Chocolatey 安装路径
+            'C:\\ProgramData\\chocolatey\\bin\\ffmpeg.exe',
+            # Scoop 安装路径
+            f"{userprofile}\\scoop\\shims\\ffmpeg.exe",
+            # 手动安装路径
+            f"{program_files}\\FFmpeg\\bin\\ffmpeg.exe",
+            f"{program_files_x86}\\FFmpeg\\bin\\ffmpeg.exe",
+            # 其他常见路径
+            'C:\\ffmpeg\\bin\\ffmpeg.exe',
+            f"{localappdata}\\ffmpeg\\bin\\ffmpeg.exe",
+        ]
+
+        for full_path in windows_paths:
+            if Path(full_path).exists():
+                has_libass = check_libass_support(full_path)
+                variant_type = 'full' if has_libass else 'standard'
+                print(f"   找到 FFmpeg: {full_path}")
+                print(f"   类型: {variant_type}")
+                print(f"   libass 支持: {'✅ 是' if has_libass else '❌ 否'}")
+                return {
+                    'type': variant_type,
+                    'path': full_path,
+                    'has_libass': has_libass
+                }
+
     # 检查标准 FFmpeg（PATH 中的）
     standard_path = shutil.which('ffmpeg')
     if standard_path:
@@ -149,6 +189,28 @@ def install_ffmpeg_full_guide():
         print("  sudo pacman -S ffmpeg libass")
         print("\n如果包管理器的 FFmpeg 不支持 libass，请编译安装:")
         print("  参考: https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu")
+
+    elif system == 'Windows':
+        print("\nWindows 安装方法:")
+        print("  # 方法 1: 使用 winget (推荐)")
+        print("  winget install ffmpeg")
+        print("  # 或使用 Gyan's full build (包含 libass):")
+        print("  winget install Gyan.FFmpeg")
+        print("")
+        print("  # 方法 2: 使用 Chocolatey")
+        print("  choco install ffmpeg-full")
+        print("")
+        print("  # 方法 3: 使用 Scoop")
+        print("  scoop install ffmpeg")
+        print("")
+        print("  # 方法 4: 手动安装")
+        print("  1. 下载: https://www.gyan.dev/ffmpeg/builds/")
+        print("     选择 'release-full' 或 'release-full-shared'")
+        print("  2. 解压到 C:\\ffmpeg")
+        print("  3. 将 C:\\ffmpeg\\bin 添加到系统 PATH")
+        print("")
+        print("验证安装:")
+        print("  ffmpeg -filters | findstr subtitles")
 
     else:
         print("\n其他系统:")

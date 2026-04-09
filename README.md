@@ -31,7 +31,7 @@ npx skills add https://github.com/op7418/Youtube-clipper-skill
 
 This command will automatically install the skill to `~/.claude/skills/youtube-clipper/`.
 
-### Option 2: Manual Installation
+### Option 2: Manual Installation (macOS/Linux)
 
 ```bash
 git clone https://github.com/op7418/Youtube-clipper-skill.git
@@ -45,18 +45,36 @@ The install script will:
 - Check system dependencies (Python, yt-dlp, FFmpeg)
 - Create `.env` configuration file
 
+### Option 3: Windows Installation
+
+```powershell
+# Clone the repository
+git clone https://github.com/op7418/Youtube-clipper-skill.git
+cd Youtube-clipper-skill
+
+# Run PowerShell install script
+powershell -ExecutionPolicy Bypass -File install_as_skill.ps1
+```
+
+The PowerShell script will:
+- Copy files to `%USERPROFILE%\.claude\skills\youtube-clipper\`
+- Install Python dependencies
+- Check system dependencies (Python, yt-dlp, FFmpeg, Node.js)
+- Create `.env` configuration file
+- Create helper batch scripts
+
 ---
 
 ## Requirements
 
 ### System Dependencies
 
-| Dependency | Version | Purpose | Installation |
-|------------|---------|---------|--------------|
+| Dependency | Version | Purpose | Installation (macOS / Linux / Windows) |
+|------------|---------|---------|----------------------------------------|
 | **Python** | 3.8+ | Script execution | [python.org](https://www.python.org/downloads/) |
-| **yt-dlp** | Latest | YouTube download | `brew install yt-dlp` (macOS)<br>`sudo apt install yt-dlp` (Ubuntu)<br>`pip install yt-dlp` (pip) |
-| **FFmpeg with libass** | Latest | Video processing & subtitle burning | `brew install ffmpeg-full` (macOS)<br>`sudo apt install ffmpeg libass-dev` (Ubuntu) |
-| **Node.js** | 20+ | PO Token generation | [nodejs.org](https://nodejs.org/) |
+| **yt-dlp** | Latest | YouTube download | `brew install yt-dlp` / `sudo apt install yt-dlp` / `winget install yt-dlp` |
+| **FFmpeg with libass** | Latest | Video processing & subtitle burning | `brew install ffmpeg-full` / `sudo apt install ffmpeg libass-dev` / `winget install ffmpeg` |
+| **Node.js** | 20+ | PO Token generation | [nodejs.org](https://nodejs.org/) or `winget install OpenJS.NodeJS` |
 
 ### PO Token Provider (Required for YouTube Download)
 
@@ -190,9 +208,28 @@ brew uninstall ffmpeg
 brew install ffmpeg-full
 ```
 
+**Windows users**: Install FFmpeg using winget (official Gyan's builds include libass):
+
+```powershell
+# Install FFmpeg with all codecs and libass
+winget install Gyan.FFmpeg
+
+# Or use Chocolatey
+choco install ffmpeg-full
+
+# Or use Scoop
+scoop install ffmpeg
+```
+
 **Verify libass support**:
+
 ```bash
+# macOS/Linux
 ffmpeg -filters 2>&1 | grep subtitles
+
+# Windows (Command Prompt or PowerShell)
+ffmpeg -filters | findstr subtitles
+
 # Should output: subtitles    V->V  (...)
 ```
 
@@ -389,6 +426,50 @@ YT_DLP_PROXY=socks5://proxy-server:port
 - Removing special characters: `/ \ : * ? " < > |`
 - Replacing spaces with underscores
 - Limiting length to 100 characters
+
+### Windows PowerShell execution policy error
+
+**Error**: `cannot be loaded because running scripts is disabled on this system`
+
+**Solution**: Run PowerShell with Bypass policy:
+```powershell
+powershell -ExecutionPolicy Bypass -File install_as_skill.ps1
+```
+
+Or change execution policy for current user:
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```
+
+### Windows: yt-dlp or ffmpeg not found after installation
+
+**Issue**: Command not recognized in PowerShell/CMD after winget install
+
+**Solution**: Refresh PATH environment variable or restart terminal:
+```powershell
+# Refresh PATH in current PowerShell session
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+```
+
+Or restart PowerShell/Command Prompt after installation.
+
+### Windows: PO Token Provider service won't start
+
+**Issue**: `node is not recognized` or `npm is not recognized`
+
+**Solution**:
+1. Verify Node.js installation:
+   ```powershell
+   node --version
+   npm --version
+   ```
+
+2. If not found, install via winget:
+   ```powershell
+   winget install OpenJS.NodeJS
+   ```
+
+3. Restart terminal and try again
 
 ---
 
