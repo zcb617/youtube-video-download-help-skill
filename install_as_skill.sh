@@ -150,17 +150,49 @@ main() {
     fi
 
     # 检查 Node.js（PO Token Provider 需要）
+    print_info "检查 Node.js..."
     if command_exists node; then
         NODE_VERSION=$(node --version)
         print_success "Node.js 已安装: $NODE_VERSION"
 
+        # 检查版本是否 >= 20
+        NODE_MAJOR=$(echo "$NODE_VERSION" | cut -d'v' -f2 | cut -d'.' -f1)
+        if [ "$NODE_MAJOR" -ge 20 ]; then
+            print_success "Node.js 版本符合要求 (>= 20)"
+        else
+            print_warning "Node.js 版本过低 ($NODE_VERSION)，建议升级到 20+"
+            print_info "PO Token Provider 需要 Node.js 20 或更高版本"
+        fi
+
         # 提示下载 PO Token Provider 服务
-        print_info "PO Token Provider 服务代码已下载，如需启动服务："
-        print_info "  cd bgutil-ytdlp-pot-provider/server"
-        print_info "  npm ci && npx tsc && node build/main.js"
+        print_info ""
+        print_info "PO Token Provider 服务启动方法："
+        print_info "  1. 克隆服务代码:"
+        print_info "     git clone --single-branch --branch 1.3.1 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git"
+        print_info "  2. 启动服务:"
+        print_info "     cd bgutil-ytdlp-pot-provider/server"
+        print_info "     npm ci && npx tsc && node build/main.js"
     else
         print_warning "Node.js 未安装，PO Token Provider 服务无法启动"
-        print_info "如需使用，请先安装 Node.js 20+: https://nodejs.org/"
+        print_info ""
+        print_info "Node.js 是运行 PO Token Provider 服务的必需依赖"
+        print_info "推荐安装方法（使用 nvm）:"
+        print_info ""
+        print_info "  # 1. 下载并安装 nvm"
+        print_info '  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash'
+        print_info ""
+        print_info "  # 2. 加载 nvm（或重新打开终端）"
+        print_info '  export NVM_DIR="$HOME/.nvm"'
+        print_info '  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'
+        print_info ""
+        print_info "  # 3. 下载并安装 Node.js 24"
+        print_info "  nvm install 24"
+        print_info ""
+        print_info "  # 4. 验证安装"
+        print_info "  node -v  # 应输出 v24.x.x"
+        print_info "  npm -v   # 应输出 11.x.x"
+        print_info ""
+        print_info "其他安装方法: https://nodejs.org/"
     fi
 
     # 9. 安装 Whisper（可选，用于无字幕视频转录）

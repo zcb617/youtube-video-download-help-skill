@@ -57,7 +57,13 @@ model: claude-sonnet-4-5-20250514
   ```
 - Python 依赖缺失: 提示 `pip install pysrt python-dotenv`
 
-4. 检测 PO Token Provider（用于绕过 YouTube 验证）
+4. 检测 Node.js（PO Token Provider 必需）
+   ```bash
+   node --version  # 需要 v20+
+   npm --version
+   ```
+
+5. 检测 PO Token Provider（用于绕过 YouTube 验证）
    ```bash
    # 检查 pip 包是否安装
    python3 -c "import bgutil_ytdlp_pot_provider"
@@ -72,6 +78,16 @@ model: claude-sonnet-4-5-20250514
    ```
 
 **如果环境检测失败**:
+- **Node.js**:
+  - 未安装: 使用 nvm 安装
+    ```bash
+    # 安装 nvm
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash
+    export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    # 安装 Node.js 24
+    nvm install 24
+    ```
+  - 版本过低: `nvm install 24 && nvm use 24`
 - **PO Token Provider**:
   - Python 包: `pip install bgutil-ytdlp-pot-provider`
   - 服务未运行: 提示用户启动
@@ -85,6 +101,7 @@ model: claude-sonnet-4-5-20250514
 - 标准 Homebrew FFmpeg 不包含 libass，无法烧录字幕
 - ffmpeg-full 路径: `/opt/homebrew/opt/ffmpeg-full/bin/ffmpeg` (Apple Silicon)
 - PO Token Provider 是可选的，但推荐用于绕过 YouTube 验证
+  - PO Token Provider 依赖 Node.js 20+ 运行服务
 - Whisper 是可选的，用于处理无字幕视频
 - 必须先通过环境检测才能继续
 
