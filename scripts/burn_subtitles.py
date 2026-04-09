@@ -29,11 +29,12 @@ def detect_ffmpeg_variant() -> Dict:
     """
     print("🔍 检测 FFmpeg 环境...")
 
-    # 优先检查 ffmpeg-full（macOS）
-    if platform.system() == 'Darwin':
-        # Apple Silicon
+    # 优先检查平台特定的 FFmpeg 路径
+    system = platform.system()
+
+    if system == 'Darwin':
+        # macOS: 优先检查 ffmpeg-full（Apple Silicon 和 Intel）
         full_path_arm = '/opt/homebrew/opt/ffmpeg-full/bin/ffmpeg'
-        # Intel
         full_path_intel = '/usr/local/opt/ffmpeg-full/bin/ffmpeg'
 
         for full_path in [full_path_arm, full_path_intel]:
@@ -47,7 +48,29 @@ def detect_ffmpeg_variant() -> Dict:
                     'has_libass': has_libass
                 }
 
-    # 检查标准 FFmpeg
+    elif system == 'Linux':
+        # Linux: 检查常见的 FFmpeg 安装路径
+        linux_paths = [
+            '/usr/bin/ffmpeg',           # 包管理器安装（apt, yum等）
+            '/usr/local/bin/ffmpeg',     # 源码编译安装
+            '/snap/bin/ffmpeg',          # Snap 安装
+            '/opt/ffmpeg/bin/ffmpeg',    # 自定义安装
+        ]
+
+        for full_path in linux_paths:
+            if Path(full_path).exists():
+                has_libass = check_libass_support(full_path)
+                variant_type = 'full' if has_libass else 'standard'
+                print(f"   找到 FFmpeg: {full_path}")
+                print(f"   类型: {variant_type}")
+                print(f"   libass 支持: {'✅ 是' if has_libass else '❌ 否'}")
+                return {
+                    'type': variant_type,
+                    'path': full_path,
+                    'has_libass': has_libass
+                }
+
+    # 检查标准 FFmpeg（PATH 中的）
     standard_path = shutil.which('ffmpeg')
     if standard_path:
         has_libass = check_libass_support(standard_path)
@@ -101,15 +124,32 @@ def install_ffmpeg_full_guide():
     显示安装 ffmpeg-full 的指南
     """
     print("\n" + "="*60)
-    print("⚠️  需要安装 ffmpeg-full 才能烧录字幕")
+    print("⚠️  需要安装支持 libass 的 FFmpeg 才能烧录字幕")
     print("="*60)
 
-    if platform.system() == 'Darwin':
+    system = platform.system()
+
+    if system == 'Darwin':
         print("\nmacOS 安装方法:")
         print("  brew install ffmpeg-full")
         print("\n安装后，FFmpeg 路径:")
         print("  /opt/homebrew/opt/ffmpeg-full/bin/ffmpeg  (Apple Silicon)")
         print("  /usr/local/opt/ffmpeg-full/bin/ffmpeg     (Intel)")
+
+    elif system == 'Linux':
+        print("\nLinux 安装方法:")
+        print("  # Ubuntu/Debian")
+        print("  sudo apt-get update")
+        print("  sudo apt-get install ffmpeg libass-dev")
+        print("")
+        print("  # CentOS/RHEL/Fedora")
+        print("  sudo dnf install ffmpeg libass")
+        print("")
+        print("  # Arch Linux")
+        print("  sudo pacman -S ffmpeg libass")
+        print("\n如果包管理器的 FFmpeg 不支持 libass，请编译安装:")
+        print("  参考: https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu")
+
     else:
         print("\n其他系统:")
         print("  请从源码编译 FFmpeg，确保包含 libass 支持")

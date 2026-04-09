@@ -214,6 +214,31 @@ main() {
         print_success "ffmpeg-full 已安装（Intel Mac）"
         FFMPEG_FOUND=true
         LIBASS_SUPPORTED=true
+    elif [ -f "/usr/bin/ffmpeg" ] || [ -f "/usr/local/bin/ffmpeg" ] || [ -f "/snap/bin/ffmpeg" ]; then
+        # Linux 路径检查
+        FFMPEG_PATH=""
+        for path in "/usr/bin/ffmpeg" "/usr/local/bin/ffmpeg" "/snap/bin/ffmpeg"; do
+            if [ -f "$path" ]; then
+                FFMPEG_PATH="$path"
+                break
+            fi
+        done
+
+        if [ -z "$FFMPEG_PATH" ]; then
+            FFMPEG_PATH="ffmpeg"
+        fi
+
+        FFMPEG_VERSION=$($FFMPEG_PATH -version | head -n 1)
+        print_success "FFmpeg 已安装: $FFMPEG_VERSION"
+        FFMPEG_FOUND=true
+
+        # 检查 libass 支持
+        if $FFMPEG_PATH -filters 2>&1 | grep -q "subtitles"; then
+            print_success "FFmpeg 支持 libass（字幕烧录可用）"
+            LIBASS_SUPPORTED=true
+        else
+            print_warning "FFmpeg 不支持 libass（字幕烧录不可用）"
+        fi
     elif command_exists ffmpeg; then
         FFMPEG_VERSION=$(ffmpeg -version | head -n 1)
         print_success "FFmpeg 已安装: $FFMPEG_VERSION"
@@ -231,13 +256,17 @@ main() {
     if [ "$FFMPEG_FOUND" = false ]; then
         print_error "FFmpeg 未安装"
         print_info "安装方法:"
-        print_info "  macOS:  brew install ffmpeg-full  # 推荐，包含 libass"
-        print_info "  Ubuntu: sudo apt-get install ffmpeg libass-dev"
+        print_info "  macOS:   brew install ffmpeg-full     # 推荐，包含 libass"
+        print_info "  Ubuntu:  sudo apt-get install ffmpeg libass-dev"
+        print_info "  CentOS:  sudo dnf install ffmpeg libass"
+        print_info "  Arch:    sudo pacman -S ffmpeg libass"
     elif [ "$LIBASS_SUPPORTED" = false ]; then
         print_warning "FFmpeg 缺少 libass 支持，字幕烧录功能将不可用"
-        print_info "解决方法（macOS）:"
-        print_info "  brew uninstall ffmpeg"
-        print_info "  brew install ffmpeg-full"
+        print_info "解决方法:"
+        print_info "  macOS:   brew uninstall ffmpeg && brew install ffmpeg-full"
+        print_info "  Ubuntu:  sudo apt-get install ffmpeg libass-dev"
+        print_info "  CentOS:  sudo dnf install ffmpeg libass"
+        print_info "  Arch:    sudo pacman -S ffmpeg libass"
     fi
 
     # 12. 创建 .env 文件
