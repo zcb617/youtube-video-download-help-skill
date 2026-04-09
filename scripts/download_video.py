@@ -77,7 +77,7 @@ def download_video(url: str, output_dir: str = None) -> dict:
 
     # 获取视频信息
     print("\n📊 获取视频信息...")
-    info_cmd = ['yt-dlp', '--dump-json', '--js-runtimes', 'node', url]
+    info_cmd = ['yt-dlp', '--dump-json', '--no-js-runtimes', '--js-runtimes', 'node', url]
 
     # 添加 PO Token 参数
     if use_po_token:
@@ -110,7 +110,7 @@ def download_video(url: str, output_dir: str = None) -> dict:
 
     download_cmd = [
         'yt-dlp',
-        '--js-runtimes', 'node',
+        '--no-js-runtimes', '--js-runtimes', 'node',
         '--format', 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best',
         '-o', output_template,
         '--write-subs',
