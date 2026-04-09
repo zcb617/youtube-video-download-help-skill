@@ -136,7 +136,57 @@ main() {
 
     print_success "Python 依赖安装完成（yt-dlp、pysrt、python-dotenv）"
 
-    # 8. 检查 yt-dlp
+    # 8. 安装 PO Token Provider（可选，用于绕过 YouTube 验证）
+    print_header "安装 PO Token Provider（可选）"
+    print_info "PO Token Provider 用于绕过 YouTube 的反爬虫验证"
+    print_info "这是一个可选依赖，但推荐安装以提高下载成功率"
+
+    # 安装 Python 包
+    print_info "安装 bgutil-ytdlp-pot-provider..."
+    if command_exists pip3; then
+        pip3 install -q bgutil-ytdlp-pot-provider 2>/dev/null || print_warning "PO Token Provider 安装失败，将在使用时自动安装"
+    else
+        pip install -q bgutil-ytdlp-pot-provider 2>/dev/null || print_warning "PO Token Provider 安装失败，将在使用时自动安装"
+    fi
+
+    # 检查 Node.js（PO Token Provider 需要）
+    if command_exists node; then
+        NODE_VERSION=$(node --version)
+        print_success "Node.js 已安装: $NODE_VERSION"
+
+        # 提示下载 PO Token Provider 服务
+        print_info "PO Token Provider 服务代码已下载，如需启动服务："
+        print_info "  cd bgutil-ytdlp-pot-provider/server"
+        print_info "  npm ci && npx tsc && node build/main.js"
+    else
+        print_warning "Node.js 未安装，PO Token Provider 服务无法启动"
+        print_info "如需使用，请先安装 Node.js 20+: https://nodejs.org/"
+    fi
+
+    # 9. 安装 Whisper（可选，用于无字幕视频转录）
+    print_header "安装 Whisper（可选）"
+    print_info "Whisper 用于为没有字幕的视频自动生成字幕"
+    print_info "这是一个可选依赖，默认使用 CPU 运行"
+
+    # 检查 CUDA（仅提示，不强制要求）
+    if command_exists nvidia-smi; then
+        GPU_INFO=$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -n 1)
+        if [ -n "$GPU_INFO" ]; then
+            print_success "检测到 GPU: $GPU_INFO"
+            print_info "如需 GPU 加速，请手动安装 CUDA 版本的 PyTorch"
+            print_info "详见: https://pytorch.org/get-started/locally/"
+        fi
+    fi
+
+    # 安装 faster-whisper
+    print_info "安装 faster-whisper（CPU 版本）..."
+    if command_exists pip3; then
+        pip3 install -q faster-whisper 2>/dev/null || print_warning "faster-whisper 安装失败，将在使用时自动安装"
+    else
+        pip install -q faster-whisper 2>/dev/null || print_warning "faster-whisper 安装失败，将在使用时自动安装"
+    fi
+
+    # 10. 检查 yt-dlp
     print_info "检查 yt-dlp..."
     if command_exists yt-dlp; then
         YT_DLP_VERSION=$(yt-dlp --version)
@@ -149,7 +199,7 @@ main() {
         print_info "  或: pip3 install -U yt-dlp"
     fi
 
-    # 9. 检查 FFmpeg（关键：需要 libass 支持）
+    # 11. 检查 FFmpeg（关键：需要 libass 支持）
     print_header "检查 FFmpeg（字幕烧录需要）"
 
     FFMPEG_FOUND=false
@@ -190,7 +240,7 @@ main() {
         print_info "  brew install ffmpeg-full"
     fi
 
-    # 10. 创建 .env 文件
+    # 12. 创建 .env 文件
     print_header "配置环境变量"
 
     if [ -f "$SKILL_DIR/.env.example" ]; then
@@ -207,7 +257,7 @@ main() {
         print_warning "未找到 .env.example 文件"
     fi
 
-    # 11. 完成
+    # 13. 完成
     print_header "安装完成！"
 
     print_success "YouTube Clipper 已成功安装为 Claude Code Skill"

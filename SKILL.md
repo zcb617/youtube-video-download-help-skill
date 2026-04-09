@@ -57,9 +57,35 @@ model: claude-sonnet-4-5-20250514
   ```
 - Python 依赖缺失: 提示 `pip install pysrt python-dotenv`
 
+4. 检测 PO Token Provider（用于绕过 YouTube 验证）
+   ```bash
+   # 检查 pip 包是否安装
+   python3 -c "import bgutil_ytdlp_pot_provider"
+   
+   # 检查服务是否运行
+   curl http://127.0.0.1:4416/health
+   ```
+
+5. 检测 Whisper（用于无字幕视频转录）
+   ```bash
+   python3 -c "import faster_whisper; print('✅ faster_whisper available')"
+   ```
+
+**如果环境检测失败**:
+- **PO Token Provider**:
+  - Python 包: `pip install bgutil-ytdlp-pot-provider`
+  - 服务未运行: 提示用户启动
+    ```bash
+    cd bgutil-ytdlp-pot-provider/server && npm ci && npx tsc && node build/main.js
+    ```
+- **Whisper**: 自动安装 `pip install faster-whisper`
+  - 仅支持 CPU（GPU 需要手动配置 CUDA）
+
 **注意**:
 - 标准 Homebrew FFmpeg 不包含 libass，无法烧录字幕
 - ffmpeg-full 路径: `/opt/homebrew/opt/ffmpeg-full/bin/ffmpeg` (Apple Silicon)
+- PO Token Provider 是可选的，但推荐用于绕过 YouTube 验证
+- Whisper 是可选的，用于处理无字幕视频
 - 必须先通过环境检测才能继续
 
 ---

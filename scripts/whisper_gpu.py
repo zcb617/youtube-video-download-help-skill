@@ -104,14 +104,56 @@ def select_best_gpu(preferred_gpu: Optional[int] = None, min_memory_mb: int = 40
         return 'cpu', -1
 
 
+def check_and_install_whisper() -> bool:
+    """检查并自动安装 faster-whisper"""
+    try:
+        from faster_whisper import WhisperModel
+        return True
+    except ImportError:
+        print("⚠️  faster_whisper 未安装，尝试自动安装...")
+        import subprocess
+        try:
+            # 尝试使用 pip3 或 pip 安装
+            for pip_cmd in ['pip3', 'pip']:
+                try:
+                    result = subprocess.run(
+                        [pip_cmd, 'install', '-q', 'faster-whisper'],
+                        capture_output=True,
+                        text=True,
+                        timeout=120
+                    )
+                    if result.returncode == 0:
+                        print("✅ faster-whisper 安装成功")
+                        # 验证安装
+                        try:
+                            from faster_whisper import WhisperModel
+                            print("✅ faster-whisper 验证通过")
+                            return True
+                        except ImportError:
+                            print("⚠️  安装后验证失败")
+                            return False
+                    break  # pip 命令存在但安装失败，不再尝试其他 pip
+                except FileNotFoundError:
+                    continue  # 尝试下一个 pip 命令
+            print("❌ faster-whisper 安装失败")
+            print("请手动运行: pip3 install faster-whisper")
+            return False
+        except Exception as e:
+            print(f"❌ 安装过程中出错: {e}")
+            return False
+
+
 def transcribe(video_path: str, output_path: str, device: str, gpu_index: int,
                model_size: str = 'medium', language: str = 'zh') -> bool:
     """执行转录"""
+    # 首先检查并安装 faster-whisper
+    if not check_and_install_whisper():
+        return False
+
     try:
         from faster_whisper import WhisperModel
     except ImportError:
-        print("错误: faster_whisper 未安装")
-        print("请运行: pip install faster-whisper")
+        print("❌ faster_whisper 导入失败")
         return False
 
     # 设置 GPU 环境变量
