@@ -11,6 +11,26 @@ English | [简体中文](README.zh-CN.md)
 
 ---
 
+⚠️ **IMPORTANT LEGAL NOTICE**
+
+This tool uses **PO Token** to bypass YouTube's anti-bot verification. **This violates YouTube's Terms of Service** and carries significant risks:
+
+- **IP Ban**: YouTube may block your IP address temporarily or permanently
+- **Account Suspension**: Associated Google accounts may be suspended
+- **Legal Action**: Bulk downloading may result in DMCA notices
+- **ToS Violation**: Circumventing security features violates [YouTube's Terms](https://www.youtube.com/t/terms)
+
+**By using this tool, you acknowledge that:**
+1. You are solely responsible for any consequences
+2. You will not use it for commercial redistribution
+3. You understand this is an ongoing arms race that may stop working at any time
+
+**This tool is provided for educational/research purposes only. Use at your own risk.**
+
+See [PO Token Risks](#po-token-risks-and-considerations) section for details.
+
+---
+
 ## Features
 
 - **AI Semantic Analysis** - Generate fine-grained chapters (2-5 minutes each) by understanding video content, not just mechanical time splitting
