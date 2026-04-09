@@ -28,7 +28,7 @@ def check_po_token_server(url: str = "http://127.0.0.1:4416") -> bool:
     """检查 PO Token 服务是否运行"""
     try:
         import urllib.request
-        urllib.request.urlopen(url, timeout=2)
+        urllib.request.urlopen(f"{url}/ping", timeout=2)
         return True
     except:
         return False
