@@ -414,3 +414,60 @@ python3 scripts/generate_summary.py <chapter_info>
 5. 最后展示完整的输出结果
 
 记住：这个 Skill 的核心价值在于 **AI 精细章节分析** 和 **无缝的技术处理**，让用户能快速从长视频中提取高质量的短视频片段。
+
+---
+
+## YouTube 验证失败处理流程
+
+当下载视频时遇到 YouTube 验证问题（如 "Sign in to confirm you're not a bot"），需要设置 PO Token Provider。
+
+### 处理步骤
+
+1. **检查 Node.js**
+   ```bash
+   node --version  # 需要 v20+
+   npm --version
+   ```
+
+2. **向用户说明风险并获得确认**
+
+   在安装 PO Token Provider 前，必须向用户说明：
+
+   > ⚠️ **重要风险提示**
+   >
+   > PO Token Provider 用于绕过 YouTube 的反爬虫验证，这涉及以下风险：
+   >
+   > 1. **违反服务条款**：违反 YouTube Terms of Service 第 4.C 条（禁止绕过安全功能）
+   > 2. **IP 封禁**：YouTube 可能临时或永久封禁你的 IP 地址
+   > 3. **账号封禁**：关联的 Google 账号可能被暂停
+   > 4. **法律风险**：大量下载可能导致 DMCA 通知
+   >
+   > **用户确认**：请确认你理解并愿意承担以上风险？（是/否）
+
+3. **用户确认后，安装 PO Token Provider**
+
+   如果用户确认：
+   ```bash
+   pip install bgutil-ytdlp-pot-provider
+   ```
+
+4. **克隆并启动 PO Token 服务**
+   ```bash
+   git clone --single-branch --branch 1.3.1 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git
+   cd bgutil-ytdlp-pot-provider/server
+   npm ci && npx tsc && node build/main.js
+   ```
+
+5. **验证服务运行**
+   ```bash
+   curl http://127.0.0.1:4416/health
+   ```
+
+6. **重新尝试下载视频**
+
+### 如果用户拒绝
+
+如果用户选择不安装 PO Token Provider：
+- 说明视频可能无法下载
+- 建议替代方案：使用已登录的浏览器导出 cookies.txt
+- 或建议用户手动下载视频后上传处理
