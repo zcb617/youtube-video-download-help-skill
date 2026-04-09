@@ -477,22 +477,14 @@ python3 scripts/generate_summary.py <chapter_info>
 
 4. **克隆并启动 PO Token 服务**
 
-   **Linux/macOS**:
+   **Linux/macOS**：
    ```bash
-   bash start_po_token_service.sh  # 或使用手动命令
-   cd bgutil-ytdlp-pot-provider/server
-   npm ci && npx tsc && node build/main.js
+   bash start_po_token_service.sh
    ```
 
-   **Windows**（使用提供的批处理脚本）：
+   **Windows**：
    ```powershell
    start_po_token_service.bat
-   ```
-   或手动执行：
-   ```powershell
-   bash start_po_token_service.sh  # 或使用手动命令
-   cd bgutil-ytdlp-pot-provider\server
-   npm ci && npx tsc && node build\main.js
    ```
 
 5. **验证服务运行**
