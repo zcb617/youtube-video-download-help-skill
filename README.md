@@ -56,6 +56,98 @@ The install script will:
 | **Python** | 3.8+ | Script execution | [python.org](https://www.python.org/downloads/) |
 | **yt-dlp** | Latest | YouTube download | `brew install yt-dlp` (macOS)<br>`sudo apt install yt-dlp` (Ubuntu)<br>`pip install yt-dlp` (pip) |
 | **FFmpeg with libass** | Latest | Video processing & subtitle burning | `brew install ffmpeg-full` (macOS)<br>`sudo apt install ffmpeg libass-dev` (Ubuntu) |
+| **Node.js** | 20+ | PO Token generation | [nodejs.org](https://nodejs.org/) |
+
+### PO Token Provider (Required for YouTube Download)
+
+**⚠️ IMPORTANT**: YouTube now requires PO Token for all downloads. Cookies alone are no longer sufficient.
+
+#### What is PO Token?
+
+**PO Token (Proof of Origin Token)** is YouTube's anti-bot verification mechanism. It replaced the older cookie-based authentication in 2024-2025.
+
+**Key Characteristics**:
+- **Short-lived**: Expires in minutes to hours (unlike cookies that last days/weeks)
+- **Device-bound**: Generated using browser fingerprints (Canvas, WebGL, fonts, etc.)
+- **Computationally expensive**: Requires executing JavaScript challenges in a real browser environment
+
+#### Why Cookies No Longer Work
+
+| Aspect | Cookie Era | PO Token Era |
+|--------|-----------|--------------|
+| Verification target | Account identity | Device + Behavior + Time |
+| Token lifetime | Days to weeks | Minutes to hours |
+| Generation method | Issued at login | Real-time JS computation |
+| Detection points | HTTP headers only | Complete browser environment |
+
+YouTube now requires a **fresh PO Token** for each playback request. The token must be generated in a real browser environment, making simple HTTP requests with cookies insufficient.
+
+#### Technical Architecture
+
+```
+┌─────────┐     ┌─────────────────┐     ┌─────────────┐     ┌─────────┐
+│ yt-dlp  │────▶│  PO Token       │────▶│  Headless   │────▶│ YouTube │
+│         │◄────│  Provider       │◄────│  Chrome     │◄────│         │
+└─────────┘     │  (Node.js)      │     └─────────────┘     └─────────┘
+                └─────────────────┘
+                        │
+                        ▼
+                ┌───────────────┐
+                │ JavaScript    │
+                │ Challenge     │
+                │ (botguard.js) │
+                └───────────────┘
+```
+
+**How it works**:
+1. YouTube returns encrypted JavaScript code (`botguard.js`)
+2. Code must execute in a **real browser** (V8 engine, Web APIs, etc.)
+3. Browser fingerprints collected: Canvas, WebGL, fonts, timezone, screen resolution
+4. PO Token generated through obfuscated algorithm
+5. Token included in subsequent video requests
+
+#### Installation
+
+**Step 1: Install Python package**
+```bash
+pip install bgutil-ytdlp-pot-provider
+```
+
+**Step 2: Clone and build the provider service**
+```bash
+git clone --single-branch --branch 1.3.1 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git
+cd bgutil-ytdlp-pot-provider/server
+npm ci && npx tsc
+```
+
+**Step 3: Start the service**
+```bash
+node build/main.js
+# Service runs on http://127.0.0.1:4416
+```
+
+**Step 4: Configure in `.env`**
+```bash
+PO_TOKEN_ENABLED=true
+PO_TOKEN_PROVIDER_URL=http://127.0.0.1:4416
+```
+
+**Note**: The PO Token Provider must run locally because:
+- Token generation depends on real browser environment
+- YouTube detects if tokens are generated on remote servers
+- Shared tokens would have identical device fingerprints (detectable)
+- Timestamps must match network latency patterns
+
+#### Why It's Free
+
+The `bgutil-ytdlp-pot-provider` is an **open-source project** (GitHub: `Brainicism/bgutil-ytdlp-pot-provider`). It uses your local machine's resources (Node.js + Chromium) to generate tokens, not a paid API service.
+
+**Trade-offs**:
+- ✅ Free and open-source
+- ✅ More reliable than cookies
+- ⚠️ Requires Node.js 20+ and ~500MB disk space for Chromium
+- ⚠️ Slower initial startup (browser launch time)
+- ⚠️ Ongoing arms race with YouTube's detection systems
 
 ### Python Packages
 
@@ -283,27 +375,16 @@ YT_DLP_PROXY=socks5://proxy-server:port
 
 ### PO Token Support (2026-04-10)
 
-Added support for PO Token to bypass YouTube bot verification:
+Added **PO Token authentication** for YouTube downloads. See [PO Token Provider](#po-token-provider-required-for-youtube-download) section above for:
+- Technical architecture and why cookies no longer work
+- Detailed installation instructions
+- Technical background on JavaScript challenges and browser fingerprinting
 
-1. **Install PO Token Provider**:
-   ```bash
-   pip install bgutil-ytdlp-pot-provider
-   ```
-
-2. **Start PO Token Server**:
-   ```bash
-   git clone --single-branch --branch 1.3.1 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git
-   cd bgutil-ytdlp-pot-provider/server
-   npm ci && npx tsc
-   node build/main.js
-   ```
-
-3. **Configure in `.env`**:
-   ```bash
-   PO_TOKEN_ENABLED=true
-   PO_TOKEN_PROVIDER_URL=http://127.0.0.1:4416
-   YOUTUBE_COOKIES_PATH=/path/to/cookies.txt
-   ```
+Quick setup:
+```bash
+pip install bgutil-ytdlp-pot-provider
+# Start the provider service (see detailed instructions above)
+```
 
 ### Whisper GPU Transcription (2026-04-10)
 
