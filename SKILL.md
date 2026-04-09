@@ -44,24 +44,36 @@ model: claude-sonnet-4-5-20250514
    ```
 
 3. 检测 Python 依赖
+
+   **确定 Python 命令**（跨平台通用）：
    ```bash
-   python3 -c "import yt_dlp; print('OK')"
-   python3 -c "import pysrt; print('OK')"
+   if python3 --version >/dev/null 2>&1; then
+       PYTHON_CMD="python3"
+   else
+       PYTHON_CMD="python"
+   fi
+   echo "Using: $PYTHON_CMD"
+   ```
+
+   **检测 Python 包**：
+   ```bash
+   $PYTHON_CMD -c "import yt_dlp; print(\'yt_dlp OK\')"
+   $PYTHON_CMD -c "import pysrt; print(\'pysrt OK\')"
    ```
    
    **Windows 用户**: 如果输出乱码或报错，先设置 UTF-8 编码：
    ```bash
    export PYTHONIOENCODING=utf-8
-   python3 -c "import yt_dlp; print('OK')"
+   $PYTHON_CMD -c "import yt_dlp; print(\'yt_dlp OK\')"
    ```
 
 **如果环境检测失败**:
-- yt-dlp 未安装: 提示 `brew install yt-dlp` 或 `pip install yt-dlp`
+- yt-dlp 未安装: 提示 `brew install yt-dlp` 或 `$PYTHON_CMD -m pip install yt-dlp`
 - FFmpeg 无 libass: 提示安装 ffmpeg-full
   ```bash
   brew install ffmpeg-full  # macOS
   ```
-- Python 依赖缺失: 提示 `pip install pysrt python-dotenv`
+- Python 依赖缺失: 提示 `$PYTHON_CMD -m pip install pysrt python-dotenv`
 
 4. 检测 Node.js（PO Token Provider 必需）
    ```bash
@@ -95,12 +107,12 @@ model: claude-sonnet-4-5-20250514
     ```
   - 版本过低: `nvm install 24 && nvm use 24`
 - **PO Token Provider**:
-  - Python 包: `pip install bgutil-ytdlp-pot-provider`
+  - Python 包: `$PYTHON_CMD -m pip install bgutil-ytdlp-pot-provider`
   - 服务未运行: 提示用户启动
     ```bash
     cd bgutil-ytdlp-pot-provider/server && npm ci && npx tsc && node build/main.js
     ```
-- **Whisper**: 自动安装 `pip install faster-whisper`
+- **Whisper**: 自动安装 `$PYTHON_CMD -m pip install faster-whisper`
   - 仅支持 CPU（GPU 需要手动配置 CUDA）
 
 **注意**:
@@ -378,7 +390,7 @@ python3 scripts/generate_summary.py <chapter_info>
 ### 环境问题
 - 缺少工具 → 提示安装命令
 - FFmpeg 无 libass → 引导安装 ffmpeg-full
-- Python 依赖缺失 → 提示 pip install
+- Python 依赖缺失 → 提示 $PYTHON_CMD -m pip install
 
 ### 下载问题
 - 无效 URL → 提示检查 URL 格式
@@ -460,7 +472,7 @@ python3 scripts/generate_summary.py <chapter_info>
 
    如果用户确认：
    ```bash
-   pip install bgutil-ytdlp-pot-provider
+   $PYTHON_CMD -m pip install bgutil-ytdlp-pot-provider
    ```
 
 4. **克隆并启动 PO Token 服务**
