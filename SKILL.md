@@ -479,7 +479,7 @@ python3 scripts/generate_summary.py <chapter_info>
 
    **Linux/macOS**:
    ```bash
-   git clone --single-branch --branch 1.3.1 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git
+   bash start_po_token_service.sh  # 或使用手动命令
    cd bgutil-ytdlp-pot-provider/server
    npm ci && npx tsc && node build/main.js
    ```
@@ -490,7 +490,7 @@ python3 scripts/generate_summary.py <chapter_info>
    ```
    或手动执行：
    ```powershell
-   git clone --single-branch --branch 1.3.1 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git
+   bash start_po_token_service.sh  # 或使用手动命令
    cd bgutil-ytdlp-pot-provider\server
    npm ci && npx tsc && node build\main.js
    ```
