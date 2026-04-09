@@ -149,6 +149,28 @@ The `bgutil-ytdlp-pot-provider` is an **open-source project** (GitHub: `Brainici
 - ⚠️ Slower initial startup (browser launch time)
 - ⚠️ Ongoing arms race with YouTube's detection systems
 
+#### ⚠️ Risks and Considerations
+
+**Terms of Service Violation**  
+Using PO Token to bypass YouTube's anti-bot measures violates [YouTube's Terms of Service](https://www.youtube.com/t/terms), specifically:
+- Section 4.C: Prohibition on circumventing any security features
+- Section 5: Restrictions on automated access (bots, scrapers)
+
+**Potential Consequences**:
+- **IP Ban**: YouTube may temporarily or permanently block your IP address
+- **Rate Limiting**: Aggressive downloading may trigger throttling
+- **Account Suspension**: If using logged-in sessions, associated Google accounts may be suspended
+- **Legal Action**: While rare for personal use, bulk downloading may result in DMCA notices or legal action
+
+**Mitigation Strategies**:
+- Use residential IP (avoid datacenter/VPN IPs)
+- Limit download frequency (avoid concurrent downloads)
+- Don't distribute downloaded content commercially
+- Consider using YouTube's official API for legitimate use cases
+
+**No Guarantee**  
+PO Token is part of an ongoing arms race with YouTube. The method may stop working at any time if YouTube updates their detection systems. This tool is provided as-is with no warranty.
+
 ### Python Packages
 
 These are automatically installed by the install script:
