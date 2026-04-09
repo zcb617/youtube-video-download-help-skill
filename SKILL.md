@@ -103,6 +103,12 @@ model: claude-sonnet-4-5-20250514
 - PO Token Provider 是可选的，但推荐用于绕过 YouTube 验证
   - PO Token Provider 依赖 Node.js 20+ 运行服务
 - Whisper 是可选的，用于处理无字幕视频
+- **Windows 用户**: 执行 Python 脚本前需设置 UTF-8 编码，避免 emoji 导致编码错误
+  ```bash
+  export PYTHONIOENCODING=utf-8
+  # 或使用 PowerShell:
+  $env:PYTHONIOENCODING="utf-8"
+  ```
 - 必须先通过环境检测才能继续
 
 ---
