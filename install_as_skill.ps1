@@ -89,30 +89,37 @@ function Main {
     }
     Write-Success "Files copied"
 
-    # 5. Check Python
+    # 5. Check Python and determine the interpreter we'll use throughout
     Write-Info "Checking Python environment..."
-    if (-not (Test-Command "python") -and -not (Test-Command "python3")) {
+    
+    # Priority: python (Windows default) > python3
+    if (Test-Command "python") {
+        $PythonCmd = "python"
+    } elseif (Test-Command "python3") {
+        $PythonCmd = "python3"
+    } else {
         Write-Error "Python not found. Please install Python 3.8+ from https://python.org"
         exit 1
     }
-
-    $PythonCmd = if (Test-Command "python3") { "python3" } else { "python" }
+    
     $PythonVersion = & $PythonCmd --version
     Write-Success "Python installed: $PythonVersion"
+    Write-Info "Using Python interpreter: $((Get-Command $PythonCmd).Source)"
 
-    # 6. Check pip
-    if (-not (Test-Command "pip") -and -not (Test-Command "pip3")) {
+    # 6. Check pip (use python -m pip for consistency)
+    Write-Info "Checking pip..."
+    $PipCheck = & $PythonCmd -m pip --version 2>$null
+    if (-not $?) {
         Write-Error "pip not found. Please install pip"
         exit 1
     }
-    $PipCmd = if (Test-Command "pip3") { "pip3" } else { "pip" }
     Write-Success "pip installed"
 
     # 7. Install Python dependencies
     Write-Info "Installing Python dependencies..."
     Set-Location $SkillDir
 
-    & $PipCmd install -q yt-dlp pysrt python-dotenv
+    & $PythonCmd -m pip install -q yt-dlp pysrt python-dotenv
     Write-Success "Python dependencies installed (yt-dlp, pysrt, python-dotenv)"
 
     # 8. Install PO Token Provider (optional)
@@ -122,7 +129,7 @@ function Main {
 
     # Install Python package
     Write-Info "Installing bgutil-ytdlp-pot-provider..."
-    & $PipCmd install -q bgutil-ytdlp-pot-provider 2>$null
+    & $PythonCmd -m pip install -q bgutil-ytdlp-pot-provider 2>$null
     if ($?) {
         Write-Success "PO Token Provider installed"
     } else {
@@ -167,23 +174,69 @@ function Main {
     Write-Info "This is an optional dependency, CPU-only by default"
 
     Write-Info "Installing faster-whisper (CPU version)..."
-    & $PipCmd install -q faster-whisper 2>$null
+    & $PythonCmd -m pip install -q faster-whisper 2>$null
     if ($?) {
         Write-Success "faster-whisper installed"
     } else {
         Write-Warning "faster-whisper installation failed, will auto-install on first use"
     }
 
-    # 10. Check yt-dlp
-    Write-Info "Checking yt-dlp..."
-    if (Test-Command "yt-dlp") {
-        $YtDlpVersion = yt-dlp --version
-        Write-Success "yt-dlp installed: $YtDlpVersion"
+    # 10. Verify Python packages installation (using the same Python interpreter)
+    Write-Header "Verifying Python Packages"
+    
+    # Check yt_dlp module
+    Write-Info "Checking yt-dlp package..."
+    $YtDlpCheck = & $PythonCmd -c "import yt_dlp; print('OK')" 2>$null
+    if ($YtDlpCheck -eq "OK") {
+        Write-Success "yt-dlp Python package installed"
+        # Also check for command-line tool
+        $YtDlpCmd = & $PythonCmd -m yt_dlp --version 2>$null
+        if ($?) {
+            Write-Success "yt-dlp command available: $YtDlpCmd"
+        } else {
+            Write-Warning "yt-dlp module installed but 'yt-dlp' command may not be in PATH"
+            Write-Info "You can use: python -m yt_dlp instead of yt-dlp"
+        }
     } else {
-        Write-Warning "yt-dlp command line tool not installed"
-        Write-Info "Installation:"
-        Write-Info "  winget install yt-dlp"
-        Write-Info "  or: pip install -U yt-dlp"
+        Write-Error "yt-dlp Python package not found!"
+        Write-Info "Try manually installing: $PythonCmd -m pip install yt-dlp"
+    }
+    
+    # Check pysrt module
+    Write-Info "Checking pysrt package..."
+    $PysrtCheck = & $PythonCmd -c "import pysrt; print('OK')" 2>$null
+    if ($PysrtCheck -eq "OK") {
+        Write-Success "pysrt package installed"
+    } else {
+        Write-Error "pysrt package not found!"
+        Write-Info "Try manually installing: $PythonCmd -m pip install pysrt"
+    }
+    
+    # Check python-dotenv module
+    Write-Info "Checking python-dotenv package..."
+    $DotenvCheck = & $PythonCmd -c "import dotenv; print('OK')" 2>$null
+    if ($DotenvCheck -eq "OK") {
+        Write-Success "python-dotenv package installed"
+    } else {
+        Write-Warning "python-dotenv package not found"
+    }
+    
+    # Check Whisper (optional)
+    Write-Info "Checking faster-whisper package..."
+    $WhisperCheck = & $PythonCmd -c "import faster_whisper; print('OK')" 2>$null
+    if ($WhisperCheck -eq "OK") {
+        Write-Success "faster-whisper package installed"
+    } else {
+        Write-Warning "faster-whisper not installed (optional)"
+    }
+    
+    # Check PO Token Provider (optional)
+    Write-Info "Checking bgutil-ytdlp-pot-provider package..."
+    $PoTokenCheck = & $PythonCmd -c "import bgutil_ytdlp_pot_provider; print('OK')" 2>$null
+    if ($PoTokenCheck -eq "OK") {
+        Write-Success "PO Token Provider package installed"
+    } else {
+        Write-Warning "PO Token Provider not installed (optional)"
     }
 
     # 11. Check FFmpeg
