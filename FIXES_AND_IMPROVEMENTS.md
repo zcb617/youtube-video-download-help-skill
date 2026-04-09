@@ -2,6 +2,121 @@
 
 生成时间: 2026-01-21
 
+---
+
+## 2026-04-10 重大更新
+
+### 新增功能
+
+#### 1. PO Token 支持 ✅
+
+**背景**: YouTube 加强了反爬虫验证，需要 PO Token 才能下载部分视频
+
+**新增文件**:
+- 更新 `scripts/download_video.py` - 支持 PO Token 和 Cookies
+
+**依赖**:
+- `bgutil-ytdlp-pot-provider` - PO Token 生成服务
+- Node.js >= 20 或 Deno >= 2.0.0
+
+**使用方法**:
+```bash
+# 1. 安装并启动 PO Token 服务
+git clone --single-branch --branch 1.3.1 https://github.com/artificiala/ytdlp-pot-provider.git
+cd bgutil-ytdlp-pot-provider/server
+npm ci && npx tsc
+node build/main.js  # 运行在 http://127.0.0.1:4416
+
+# 2. 配置 .env
+PO_TOKEN_ENABLED=true
+PO_TOKEN_PROVIDER_URL=http://127.0.0.1:4416
+YOUTUBE_COOKIES_PATH=/path/to/cookies.txt
+```
+
+**特性**:
+- 自动检测 PO Token 服务状态
+- 支持 Cookies 文件绕过验证
+- 命令行方式调用 yt-dlp，更稳定
+
+---
+
+#### 2. Whisper GPU 智能选择 ✅
+
+**背景**: 很多 YouTube 视频没有字幕，需要语音识别生成
+
+**新增文件**:
+- `scripts/whisper_gpu.py` - 智能 GPU 选择和字幕生成
+
+**特性**:
+- ✅ 自动检测所有 GPU 显存
+- ✅ 可指定 GPU，显存不足 (<4GB) 自动切换
+- ✅ 自动选择显存最大的 GPU
+- ✅ CPU 兜底方案
+- ✅ 支持 `.env` 配置
+
+**使用方法**:
+```bash
+# 自动选择最优 GPU
+python scripts/whisper_gpu.py video.mp4
+
+# 指定 GPU（显存不足会自动切换）
+python scripts/whisper_gpu.py video.mp4 --gpu 1
+
+# 强制使用 CPU
+python scripts/whisper_gpu.py video.mp4 --cpu
+
+# 指定模型和语言
+python scripts/whisper_gpu.py video.mp4 --model large --language en
+```
+
+**环境变量**:
+```bash
+WHISPER_MODEL=medium        # tiny/base/small/medium/large
+WHISPER_LANGUAGE=zh         # zh/en/ja/...
+WHISPER_MIN_MEMORY=4096     # 最小显存要求(MB)
+WHISPER_FORCE_CPU=false     # 强制使用 CPU
+```
+
+**性能对比** (RTX 5060 Ti):
+| 设备 | 用时 | 速度 |
+|------|------|------|
+| GPU (float16) | ~20秒 | 10-14x |
+| CPU (int8) | ~260秒 | 1x |
+
+---
+
+#### 3. 字幕语言扩展 ✅
+
+**更新**: 支持下载多语言字幕
+
+**支持语言**:
+- 中文: `zh`, `zh-CN`, `zh-Hans`, `zh-TW`, `zh-Hant`
+- 英文: `en`
+
+**优先级**: 中文优先，英文备选
+
+---
+
+### 配置文件更新
+
+`.env.example` 新增配置项:
+```bash
+# Whisper 配置
+WHISPER_MODEL=medium
+WHISPER_LANGUAGE=zh
+WHISPER_MIN_MEMORY=4096
+WHISPER_FORCE_CPU=false
+
+# PO Token 配置
+PO_TOKEN_ENABLED=true
+PO_TOKEN_PROVIDER_URL=http://127.0.0.1:4416
+YOUTUBE_COOKIES_PATH=
+```
+
+---
+
+## 问题总结
+
 ## 问题总结
 
 在首次测试运行中，我们遇到了以下问题：

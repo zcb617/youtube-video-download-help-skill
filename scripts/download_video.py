@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
 下载 YouTube 视频和字幕
-使用 yt-dlp 下载视频（最高 1080p）和英文字幕
+使用 yt-dlp 命令行下载视频（最高 1080p）和中英文字幕
+支持 PO Token 绕过 YouTube 验证
 """
 
 import sys
 import json
+import subprocess
+import os
 from pathlib import Path
+from dotenv import load_dotenv
 
-try:
-    import yt_dlp
-except ImportError:
-    print("❌ Error: yt-dlp not installed")
-    print("Please install: pip install yt-dlp")
-    sys.exit(1)
+# 加载环境变量
+load_dotenv()
 
 from utils import (
     validate_url,
@@ -22,6 +22,16 @@ from utils import (
     get_video_duration_display,
     ensure_directory
 )
+
+
+def check_po_token_server(url: str = "http://127.0.0.1:4416") -> bool:
+    """检查 PO Token 服务是否运行"""
+    try:
+        import urllib.request
+        urllib.request.urlopen(url, timeout=2)
+        return True
+    except:
+        return False
 
 
 def download_video(url: str, output_dir: str = None) -> dict:
@@ -33,17 +43,7 @@ def download_video(url: str, output_dir: str = None) -> dict:
         output_dir: 输出目录，默认为当前目录
 
     Returns:
-        dict: {
-            'video_path': 视频文件路径,
-            'subtitle_path': 字幕文件路径,
-            'title': 视频标题,
-            'duration': 视频时长（秒）,
-            'file_size': 文件大小（字节）
-        }
-
-    Raises:
-        ValueError: 无效的 URL
-        Exception: 下载失败
+        dict: 下载结果信息
     """
     # 验证 URL
     if not validate_url(url):
@@ -61,124 +61,159 @@ def download_video(url: str, output_dir: str = None) -> dict:
     print(f"   URL: {url}")
     print(f"   输出目录: {output_dir}")
 
-    # 配置 yt-dlp 选项
-    ydl_opts = {
-        # 视频格式：最高 1080p，优先 mp4
-        'format': 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best',
+    # 获取环境变量配置
+    po_token_enabled = os.getenv('PO_TOKEN_ENABLED', 'true').lower() == 'true'
+    po_token_url = os.getenv('PO_TOKEN_PROVIDER_URL', 'http://127.0.0.1:4416')
+    cookies_path = os.getenv('YOUTUBE_COOKIES_PATH', '')
 
-        # 输出模板：包含视频 ID（避免特殊字符问题）
-        'outtmpl': str(output_dir / '%(id)s.%(ext)s'),
+    # 检查 PO Token 服务
+    use_po_token = False
+    if po_token_enabled:
+        if check_po_token_server(po_token_url):
+            print(f"   ✅ PO Token 服务已启用: {po_token_url}")
+            use_po_token = True
+        else:
+            print(f"   ⚠️  PO Token 服务未运行，尝试其他方式...")
 
-        # 下载字幕
-        'writesubtitles': True,
-        'writeautomaticsub': True,  # 自动字幕作为备选
-        'subtitleslangs': ['en'],   # 英文字幕
-        'subtitlesformat': 'vtt',   # VTT 格式
+    # 获取视频信息
+    print("\n📊 获取视频信息...")
+    info_cmd = ['yt-dlp', '--dump-json', url]
 
-        # 不下载缩略图
-        'writethumbnail': False,
+    # 添加 PO Token 参数
+    if use_po_token:
+        info_cmd.extend([
+            '--remote-components', 'ejs:github',
+            '--extractor-args', 'youtube:player_client=mweb'
+        ])
 
-        # 静默模式（减少输出）
-        'quiet': False,
-        'no_warnings': False,
+    # 添加 Cookies
+    if cookies_path and Path(cookies_path).exists():
+        info_cmd.extend(['--cookies', cookies_path])
+        print(f"   使用 Cookies: {cookies_path}")
 
-        # 进度钩子
-        'progress_hooks': [_progress_hook],
+    result = subprocess.run(info_cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise Exception(f"获取视频信息失败: {result.stderr}")
+
+    info = json.loads(result.stdout)
+    title = info.get('title', 'Unknown')
+    duration = info.get('duration', 0)
+    video_id = info.get('id', 'unknown')
+
+    print(f"   标题: {title}")
+    print(f"   时长: {get_video_duration_display(duration)}")
+    print(f"   视频ID: {video_id}")
+
+    # 下载视频和字幕
+    print(f"\n📥 开始下载...")
+    output_template = str(output_dir / f'{video_id}.%(ext)s')
+
+    download_cmd = [
+        'yt-dlp',
+        '--format', 'bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080][ext=mp4]/best',
+        '-o', output_template,
+        '--write-subs',
+        '--write-auto-subs',
+        '--sub-langs', 'zh,zh-CN,zh-Hans,zh-TW,zh-Hant,en',
+        '--sub-format', 'vtt',
+        '--no-write-thumbnail',
+        '--progress',
+        url
+    ]
+
+    # 添加 PO Token 参数
+    if use_po_token:
+        download_cmd.extend([
+            '--remote-components', 'ejs:github',
+            '--extractor-args', 'youtube:player_client=mweb'
+        ])
+
+    # 添加 Cookies
+    if cookies_path and Path(cookies_path).exists():
+        download_cmd.extend(['--cookies', cookies_path])
+
+    subprocess.run(download_cmd, check=True)
+
+    # 查找下载的视频文件
+    video_path = None
+    for ext in ['.mp4', '.webm', '.mkv']:
+        potential = output_dir / f'{video_id}{ext}'
+        if potential.exists():
+            video_path = potential
+            break
+
+    if not video_path:
+        raise Exception("Video file not found after download")
+
+    # 查找字幕文件（支持中文和英文）
+    subtitle_path = None
+    for lang in ['.zh', '.zh-CN', '.zh-Hans', '.zh-TW', '.zh-Hant', '.en']:
+        potential = output_dir / f'{video_id}{lang}.vtt'
+        if potential.exists():
+            subtitle_path = potential
+            break
+
+    # 获取文件大小
+    file_size = video_path.stat().st_size
+
+    print(f"\n✅ 视频下载完成: {video_path.name}")
+    print(f"   大小: {format_file_size(file_size)}")
+
+    if subtitle_path and subtitle_path.exists():
+        print(f"✅ 字幕下载完成: {subtitle_path.name}")
+    else:
+        print(f"⚠️  未找到字幕，将使用 Whisper 生成...")
+        # 尝试使用 Whisper 生成字幕
+        whisper_result = generate_subtitle_with_whisper(str(video_path), output_dir)
+        if whisper_result:
+            subtitle_path = Path(whisper_result)
+            print(f"✅ Whisper 字幕生成完成: {subtitle_path.name}")
+
+    return {
+        'video_path': str(video_path),
+        'subtitle_path': str(subtitle_path) if subtitle_path else None,
+        'title': title,
+        'duration': duration,
+        'file_size': file_size,
+        'video_id': video_id
     }
 
+
+def generate_subtitle_with_whisper(video_path: str, output_dir: Path) -> str:
+    """
+    使用 Whisper 生成字幕
+
+    Returns:
+        str: 生成的字幕文件路径，失败返回 None
+    """
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            # 提取信息
-            print("\n📊 获取视频信息...")
-            info = ydl.extract_info(url, download=False)
+        # 检查 whisper_gpu.py 是否存在
+        whisper_script = Path(__file__).parent / 'whisper_gpu.py'
+        if not whisper_script.exists():
+            print("   ⚠️  whisper_gpu.py 脚本不存在，跳过自动生成字幕")
+            return None
 
-            title = info.get('title', 'Unknown')
-            duration = info.get('duration', 0)
-            video_id = info.get('id', 'unknown')
+        video_name = Path(video_path).stem
+        output_path = output_dir / f'{video_name}.whisper.vtt'
 
-            print(f"   标题: {title}")
-            print(f"   时长: {get_video_duration_display(duration)}")
-            print(f"   视频ID: {video_id}")
+        print(f"   🤖 正在使用 Whisper 生成字幕...")
 
-            # 下载视频
-            print(f"\n📥 开始下载...")
-            info = ydl.extract_info(url, download=True)
+        result = subprocess.run(
+            ['python3', str(whisper_script), video_path, '-o', str(output_path)],
+            capture_output=True,
+            text=True,
+            timeout=600
+        )
 
-            # 获取下载的文件路径
-            video_filename = ydl.prepare_filename(info)
-            video_path = Path(video_filename)
-
-            # 查找字幕文件
-            subtitle_path = None
-            subtitle_exts = ['.en.vtt', '.vtt']
-            for ext in subtitle_exts:
-                potential_sub = video_path.with_suffix(ext)
-                # 处理带语言代码的字幕文件
-                if not potential_sub.exists():
-                    # 尝试 <filename>.en.vtt 格式
-                    stem = video_path.stem
-                    potential_sub = video_path.parent / f"{stem}.en.vtt"
-
-                if potential_sub.exists():
-                    subtitle_path = potential_sub
-                    break
-
-            # 获取文件大小
-            file_size = video_path.stat().st_size if video_path.exists() else 0
-
-            # 验证下载结果
-            if not video_path.exists():
-                raise Exception("Video file not found after download")
-
-            print(f"\n✅ 视频下载完成: {video_path.name}")
-            print(f"   大小: {format_file_size(file_size)}")
-
-            if subtitle_path and subtitle_path.exists():
-                print(f"✅ 字幕下载完成: {subtitle_path.name}")
-            else:
-                print(f"⚠️  未找到英文字幕")
-                print(f"   提示：某些视频可能没有字幕或需要自动生成")
-
-            return {
-                'video_path': str(video_path),
-                'subtitle_path': str(subtitle_path) if subtitle_path else None,
-                'title': title,
-                'duration': duration,
-                'file_size': file_size,
-                'video_id': video_id
-            }
+        if result.returncode == 0 and output_path.exists():
+            return str(output_path)
+        else:
+            print(f"   ⚠️  Whisper 生成失败: {result.stderr}")
+            return None
 
     except Exception as e:
-        print(f"\n❌ 下载失败: {str(e)}")
-        raise
-
-
-def _progress_hook(d):
-    """下载进度回调"""
-    if d['status'] == 'downloading':
-        # 显示下载进度
-        if 'downloaded_bytes' in d and 'total_bytes' in d and d['total_bytes']:
-            percent = d['downloaded_bytes'] / d['total_bytes'] * 100
-            downloaded = format_file_size(d['downloaded_bytes'])
-            total = format_file_size(d['total_bytes'])
-            speed = d.get('speed', 0)
-            speed_str = format_file_size(speed) + '/s' if speed else 'N/A'
-
-            # 使用 \r 实现进度条覆盖
-            bar_length = 30
-            filled = int(bar_length * percent / 100)
-            bar = '█' * filled + '░' * (bar_length - filled)
-
-            print(f"\r   [{bar}] {percent:.1f}% - {downloaded}/{total} - {speed_str}", end='', flush=True)
-        elif 'downloaded_bytes' in d:
-            # 无总大小信息时，只显示已下载
-            downloaded = format_file_size(d['downloaded_bytes'])
-            speed = d.get('speed', 0)
-            speed_str = format_file_size(speed) + '/s' if speed else 'N/A'
-            print(f"\r   下载中... {downloaded} - {speed_str}", end='', flush=True)
-
-    elif d['status'] == 'finished':
-        print()  # 换行
+        print(f"   ⚠️  Whisper 生成出错: {e}")
+        return None
 
 
 def main():
@@ -188,6 +223,10 @@ def main():
         print("\nExample:")
         print("  python download_video.py https://youtube.com/watch?v=Ckt1cj0xjRM")
         print("  python download_video.py https://youtube.com/watch?v=Ckt1cj0xjRM ~/Downloads")
+        print("\n环境变量:")
+        print("  PO_TOKEN_ENABLED - 是否启用 PO Token (默认: true)")
+        print("  YOUTUBE_COOKIES_PATH - Cookies 文件路径")
+        print("  WHISPER_MODEL - Whisper 模型 (默认: medium)")
         sys.exit(1)
 
     url = sys.argv[1]
@@ -195,12 +234,9 @@ def main():
 
     try:
         result = download_video(url, output_dir)
-
-        # 输出 JSON 结果（供其他脚本使用）
         print("\n" + "="*60)
         print("下载结果 (JSON):")
         print(json.dumps(result, indent=2, ensure_ascii=False))
-
     except Exception as e:
         print(f"\n❌ 错误: {str(e)}")
         sys.exit(1)

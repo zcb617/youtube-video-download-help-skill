@@ -278,6 +278,63 @@ YT_DLP_PROXY=socks5://proxy-server:port
 
 ---
 
+
+## New Features
+
+### PO Token Support (2026-04-10)
+
+Added support for PO Token to bypass YouTube bot verification:
+
+1. **Install PO Token Provider**:
+   ```bash
+   pip install bgutil-ytdlp-pot-provider
+   ```
+
+2. **Start PO Token Server**:
+   ```bash
+   git clone --single-branch --branch 1.3.1 https://github.com/Brainicism/bgutil-ytdlp-pot-provider.git
+   cd bgutil-ytdlp-pot-provider/server
+   npm ci && npx tsc
+   node build/main.js
+   ```
+
+3. **Configure in `.env`**:
+   ```bash
+   PO_TOKEN_ENABLED=true
+   PO_TOKEN_PROVIDER_URL=http://127.0.0.1:4416
+   YOUTUBE_COOKIES_PATH=/path/to/cookies.txt
+   ```
+
+### Whisper GPU Transcription (2026-04-10)
+
+Added `whisper_gpu.py` for automatic GPU selection and subtitle generation:
+
+**Features**:
+- Auto-detect GPU memory
+- Auto-switch to best GPU if specified GPU has < 4GB memory
+- CPU fallback when no GPU available
+- Support `.env` configuration
+
+**Usage**:
+```bash
+# Auto-select best GPU
+python scripts/whisper_gpu.py video.mp4
+
+# Specify GPU
+python scripts/whisper_gpu.py video.mp4 --gpu 0
+
+# Force CPU
+python scripts/whisper_gpu.py video.mp4 --cpu
+```
+
+**Configuration (`.env`)**:
+```bash
+WHISPER_MODEL=medium
+WHISPER_LANGUAGE=zh
+WHISPER_MIN_MEMORY=4096
+WHISPER_FORCE_CPU=false
+```
+
 ## Documentation
 
 - **[SKILL.md](SKILL.md)** - Complete workflow and technical details
