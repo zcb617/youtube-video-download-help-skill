@@ -26,7 +26,7 @@
 ### 方式 1: npx skills（推荐）
 
 ```bash
-npx skills add https://github.com/op7418/Youtube-clipper-skill
+npx skills add https://github.com/zcb617/youtube-video-download-help-skill
 ```
 
 该命令会自动将 skill 安装到 `~/.claude/skills/youtube-clipper/` 目录。
@@ -34,8 +34,8 @@ npx skills add https://github.com/op7418/Youtube-clipper-skill
 ### 方式 2: 手动安装
 
 ```bash
-git clone https://github.com/op7418/Youtube-clipper-skill.git
-cd Youtube-clipper-skill
+git clone https://github.com/zcb617/youtube-video-download-help-skill.git
+cd youtube-video-download-help-skill
 bash install_as_skill.sh
 ```
 
@@ -290,7 +290,7 @@ YT_DLP_PROXY=socks5://proxy-server:port
 ## 贡献
 
 欢迎贡献！请：
-- 通过 [GitHub Issues](https://github.com/op7418/Youtube-clipper-skill/issues) 报告 Bug
+- 通过 [GitHub Issues](https://github.com/zcb617/youtube-video-download-help-skill/issues) 报告 Bug
 - 提交功能请求
 - 为改进提交 Pull Request
 
@@ -312,7 +312,7 @@ YT_DLP_PROXY=socks5://proxy-server:port
 
 <div align="center">
 
-**Made with ❤️ by [op7418](https://github.com/op7418)**
+**Made with ❤️ by [zcb617](https://github.com/zcb617)**
 
 如果这个 skill 对你有帮助，请给个 ⭐️
 

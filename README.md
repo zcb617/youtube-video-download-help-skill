@@ -26,7 +26,7 @@ English | [简体中文](README.zh-CN.md)
 ### Option 1: npx skills (Recommended)
 
 ```bash
-npx skills add https://github.com/op7418/Youtube-clipper-skill
+npx skills add https://github.com/zcb617/youtube-video-download-help-skill
 ```
 
 This command will automatically install the skill to `~/.claude/skills/youtube-clipper/`.
@@ -34,8 +34,8 @@ This command will automatically install the skill to `~/.claude/skills/youtube-c
 ### Option 2: Manual Installation (macOS/Linux)
 
 ```bash
-git clone https://github.com/op7418/Youtube-clipper-skill.git
-cd Youtube-clipper-skill
+git clone https://github.com/zcb617/youtube-video-download-help-skill.git
+cd youtube-video-download-help-skill
 bash install_as_skill.sh
 ```
 
@@ -49,8 +49,8 @@ The install script will:
 
 ```powershell
 # Clone the repository
-git clone https://github.com/op7418/Youtube-clipper-skill.git
-cd Youtube-clipper-skill
+git clone https://github.com/zcb617/youtube-video-download-help-skill.git
+cd youtube-video-download-help-skill
 
 # Run PowerShell install script
 powershell -ExecutionPolicy Bypass -File install_as_skill.ps1
@@ -531,7 +531,7 @@ WHISPER_FORCE_CPU=false
 ## Contributing
 
 Contributions are welcome! Please:
-- Report bugs via [GitHub Issues](https://github.com/op7418/Youtube-clipper-skill/issues)
+- Report bugs via [GitHub Issues](https://github.com/zcb617/youtube-video-download-help-skill/issues)
 - Submit feature requests
 - Open pull requests for improvements
 
@@ -553,7 +553,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 <div align="center">
 
-**Made with ❤️ by [op7418](https://github.com/op7418)**
+**Made with ❤️ by [zcb617](https://github.com/zcb617)**
 
 If this skill helps you, please give it a ⭐️
 

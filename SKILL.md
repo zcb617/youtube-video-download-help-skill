@@ -16,7 +16,7 @@ model: claude-sonnet-4-5-20250514
 
 # YouTube 视频智能剪辑工具
 
-> **Installation**: If you're installing this skill from GitHub, please refer to [README.md](README.md#installation) for installation instructions. The recommended method is `npx skills add https://github.com/op7418/Youtube-clipper-skill`.
+> **Installation**: If you're installing this skill from GitHub, please refer to [README.md](README.md#installation) for installation instructions. The recommended method is `npx skills add https://github.com/zcb617/youtube-video-download-help-skill`.
 
 ## 工作流程
 
