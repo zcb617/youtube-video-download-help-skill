@@ -195,7 +195,7 @@ def install_ffmpeg_full_guide():
         print("  # 方法 1: 使用 winget (推荐)")
         print("  winget install ffmpeg")
         print("  # 或使用 Gyan's full build (包含 libass):")
-        print("  winget install Gyan.FFmpeg")
+        print("  winget install ffmpeg")
         print("")
         print("  # 方法 2: 使用 Chocolatey")
         print("  choco install ffmpeg-full")

@@ -232,7 +232,7 @@ brew install ffmpeg-full
 
 ```powershell
 # Install FFmpeg with all codecs and libass
-winget install Gyan.FFmpeg
+winget install ffmpeg
 
 # Or use Chocolatey
 choco install ffmpeg-full

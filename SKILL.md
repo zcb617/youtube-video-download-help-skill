@@ -70,9 +70,34 @@ model: claude-sonnet-4-5-20250514
 **如果环境检测失败**:
 - yt-dlp 未安装: 提示 `brew install yt-dlp` 或 `$PYTHON_CMD -m pip install yt-dlp`
 - FFmpeg 无 libass: 提示安装 ffmpeg-full
+
+  **macOS:**
   ```bash
   brew install ffmpeg-full  # macOS
   ```
+
+  **Windows (官方安装选项):**
+  ```
+  # release essentials (最小功能):
+  choco install ffmpeg
+  scoop install ffmpeg-essentials
+  winget install "FFmpeg (Essentials Build)"
+
+  # release full (推荐 - 包含 libass):
+  choco install ffmpeg-full
+  scoop install ffmpeg
+  winget install ffmpeg    # <-- 推荐此方法
+
+  # release full shared:
+  scoop install ffmpeg-shared
+  winget install "FFmpeg (Shared)"
+
+  # git master (最新开发版):
+  scoop install ffmpeg-gyan-nightly
+  ```
+
+  **重要**: 不要自动下载 FFmpeg，请用户通过包管理器手动安装后重试。
+
 - Python 依赖缺失: 提示 `$PYTHON_CMD -m pip install pysrt python-dotenv`
 
 4. 检测 Node.js（PO Token Provider 必需）
