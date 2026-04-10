@@ -15,10 +15,13 @@ import json
 from pathlib import Path
 from typing import Optional, Tuple, List
 
-# 尝试加载 python-dotenv
+# 尝试加载 python-dotenv - 从 skill 目录的 .env 文件加载
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    script_dir = Path(__file__).parent
+    skill_dir = script_dir.parent
+    env_path = skill_dir / '.env'
+    load_dotenv(dotenv_path=env_path)
 except ImportError:
     pass
 

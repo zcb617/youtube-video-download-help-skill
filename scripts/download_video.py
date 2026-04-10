@@ -12,8 +12,11 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# 加载环境变量
-load_dotenv()
+# 加载环境变量 - 从 skill 目录的 .env 文件加载
+script_dir = Path(__file__).parent
+skill_dir = script_dir.parent
+env_path = skill_dir / '.env'
+load_dotenv(dotenv_path=env_path)
 
 from utils import (
     validate_url,
